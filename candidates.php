@@ -59,16 +59,17 @@ $candidates = $conn->query("SELECT c.*, p.posName FROM Candidates c
     <input type="hidden" name="id" value="<?= $edit_candidate['candID'] ?>">
     First Name: <input type="text" name="candFName" value="<?= $edit_candidate['candFName'] ?>" required><br>
     Middle Name: <input type="text" name="candMName" value="<?= $edit_candidate['candMName'] ?>"><br>
-    Last Name: <input type="text" name="candLName" value="<?= $edit_candidate['candLName'] ?>" required><br>
-    Position: 
+    Last Name: <input type="text" name="candLName" value="<?= $edit_candidate['candLName'] ?>" required><br> 
+    Position:
     <select name="posID">
-        <?php
-        $positions = $conn->query("SELECT posID, posName FROM Positions WHERE posStat='open'");
-        while($row = $positions->fetch_assoc()) {
-            echo "<option value='".$row["posID"]."' ".($row["posID"] == $edit_candidate["posID"] ? "selected" : "").">".$row["posName"]."</option>";
-        }
-        ?>
-    </select><br>
+    <?php
+    $positions = $conn->query("SELECT posID, posName FROM Positions WHERE posStat='open'");
+    while($row = $positions->fetch_assoc()) {
+        $selected = ($row["posID"] == $edit_candidate["posID"]) ? 'selected' : '';
+        echo "<option value='{$row["posID"]}' {$selected}>{$row["posName"]}</option>";
+    }
+    ?>
+</select><br>
     Status: 
     <select name="candStat">
         <option value="active" <?= $edit_candidate['candStat'] == 'active' ? 'selected' : '' ?>>Active</option>

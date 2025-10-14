@@ -1,5 +1,5 @@
-// vote.php - Voting/Votation UI
 <?php
+// vote.php - Voting System
 require_once 'config.php';
 
 session_start();
@@ -10,19 +10,15 @@ if (!isset($_SESSION['voterID'])) {
         $voterID = $_POST['voterID'];
         $voterPass = $_POST['voterPass'];
         
-        $sql = "SELECT * FROM Voters WHERE voterID='$voterID' AND voterStat='active'";
+        $sql = "SELECT * FROM Voters WHERE voterID='$voterID' AND voterStat='active' AND voted='n'";
         $result = $conn->query($sql);
         
         if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
-            if (password_verify($voterPass, $row['voterPass']) && $row['voted'] == 'n') {
+            if (password_verify($voterPass, $row['voterPass'])) {
                 $_SESSION['voterID'] = $voterID;
                 echo "<script>window.location.href='vote.php';</script>";
-            } else {
-                echo "Invalid credentials or already voted";
             }
-        } else {
-            echo "Invalid credentials";
         }
     }
 } else {
@@ -31,46 +27,20 @@ if (!isset($_SESSION['voterID'])) {
         $voterID = $_SESSION['voterID'];
         $votes = $_POST['votes'];
         
-        // Check if voter has already voted
-        $sql = "SELECT voted FROM Voters WHERE voterID='$voterID'";
-        $result = $conn->query($sql);
-        $row = $result->fetch_assoc();
-        
-        if ($row['voted'] == 'y') {
-            echo "You have already voted";
-        } else {
-            // Validate votes
-            $validVotes = true;
-            foreach ($votes as $posID => $candID) {
-                if ($candID != '') {
-                    $sql = "SELECT posID FROM Candidates WHERE candID='$candID'";
-                    $result = $conn->query($sql);
-                    if ($result->num_rows == 0 || $result->fetch_assoc()['posID'] != $posID) {
-                        $validVotes = false;
-                        break;
-                    }
-                }
-            }
-            
-            if ($validVotes) {
-                // Insert votes
-                foreach ($votes as $posID => $candID) {
-                    if ($candID != '') {
-                        $sql = "INSERT INTO Votes (posID, voterID, candID) VALUES ('$posID', '$voterID', '$candID')";
-                        $conn->query($sql);
-                    }
-                }
-                
-                // Mark voter as voted
-                $sql = "UPDATE Voters SET voted='y' WHERE voterID='$voterID'";
+        // Insert votes with ignore duplicates
+        foreach ($votes as $posID => $candID) {
+            if ($candID != '') {
+                $sql = "INSERT IGNORE INTO Votes (posID, voterID, candID) VALUES ('$posID', '$voterID', '$candID')";
                 $conn->query($sql);
-                
-                echo "Vote submitted successfully!";
-                echo "<script>window.location.href='results.php';</script>";
-            } else {
-                echo "Invalid votes selected";
             }
         }
+        
+        // Mark voter as voted
+        $sql = "UPDATE Voters SET voted='y' WHERE voterID='$voterID'";
+        $conn->query($sql);
+        
+        echo "Vote submitted successfully!";
+        echo "<script>window.location.href='results.php';</script>";
     }
 }
 ?>

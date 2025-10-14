@@ -1,5 +1,5 @@
-// winners.php - Election Winners UI
 <?php
+// winners.php - Election Winners
 require_once 'config.php';
 
 // Calculate winners
@@ -46,9 +46,9 @@ while($posRow = $positions->fetch_assoc()) {
         </tr>
         <?php foreach($winners as $winner): ?>
             <tr>
-                <td><?php echo $winner["position"]; ?></td>
-                <td><?php echo $winner["winner"]; ?></td>
-                <td><?php echo $winner["votes"]; ?></td>
+                <td><?= $winner["position"] ?></td>
+                <td><?= $winner["winner"] ?></td>
+                <td><?= $winner["votes"] ?></td>
             </tr>
         <?php endforeach; ?>
     </table>

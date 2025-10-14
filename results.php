@@ -1,4 +1,5 @@
 <?php
+// results.php - Election Results
 require_once 'config.php';
 
 // Calculate results
@@ -44,9 +45,9 @@ while($posRow = $positions->fetch_assoc()) {
             </tr>
             <?php foreach($data["candidates"] as $candID => $candidate): ?>
                 <tr>
-                    <td><?php echo $candidate["name"]; ?></td>
-                    <td><?php echo $candidate["votes"]; ?></td>
-                    <td><?php echo $candidate["percentage"]; ?>%</td>
+                    <td><?= $candidate["name"] ?></td>
+                    <td><?= $candidate["votes"] ?></td>
+                    <td><?= $candidate["percentage"] ?>%</td>
                 </tr>
             <?php endforeach; ?>
         </table>

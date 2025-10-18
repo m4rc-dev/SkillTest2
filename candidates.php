@@ -70,7 +70,7 @@ $candidates = $conn->query("SELECT c.*, p.posName
         STATUS :
         <SELECT name="candStat">
             <option value="active" <?=$edit_candidate['candStat']=='active' ? 'selected' : ''?>>active</option>
-            <option value="inactive" <?=$edit_candidate['candStat']=='active' ? 'selected' : ''?>>inactive</option>
+            <option value="inactive" <?=$edit_candidate['candStat']=='inactive' ? 'selected' : ''?>>inactive</option>
         </SELECT><br>
         <button type="submit" name="edit">Update Candiate</button>
         <a href="candidates.php">Cancel</a>

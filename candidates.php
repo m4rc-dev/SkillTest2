@@ -1,131 +1,125 @@
 <?php
-// candidates.php - CRUD for Candidates table
-require_once 'config.php';
+include 'db.php';
 
-// Check if editing
-$edit_mode = false;
-$edit_candidate = null;
-
-if (isset($_GET['edit'])) {
-    $edit_mode = true;
-    $edit_id = $_GET['edit'];
-    
-    // Fetch the candidate's data
-    $result = $conn->query("SELECT c.*, p.posName FROM Candidates c 
-                          JOIN Positions p ON c.posID = p.posID 
-                          WHERE c.candID=$edit_id");
-    $edit_candidate = $result->fetch_assoc();
-}
-
-// Handle Add Candidate
-if (isset($_POST['add'])) {
+//adding
+if(isset($_POST['add'])){
     $candFName = $_POST['candFName'];
     $candMName = $_POST['candMName'];
     $candLName = $_POST['candLName'];
     $posID = $_POST['posID'];
-    $candStat = $_POST['candStat'] ?? 'active';
-    
-    $conn->query("INSERT INTO Candidates (candFName, candMName, candLName, posID, candStat) VALUES ('$candFName', '$candMName', '$candLName', '$posID', '$candStat')");
+    $candStat = $_POST['candStat'];
+    $conn->query("INSERT INTO Candidates (candFName, candMName, candLName, posID, candStat) VALUES ('$candFName', '$candMName', '$candLName', '$posID', '$candStat')"); 
 }
 
-// Handle Edit Candidate
-if (isset($_POST['edit'])) {
+if(isset($_POST['edit'])){
     $id = $_POST['id'];
     $candFName = $_POST['candFName'];
     $candMName = $_POST['candMName'];
     $candLName = $_POST['candLName'];
     $posID = $_POST['posID'];
-    $candStat = $_POST['candStat'] ?? 'active';
-    
-    $conn->query("UPDATE Candidates SET candFName='$candFName', candMName='$candMName', candLName='$candLName', posID='$posID', candStat='$candStat' WHERE candID=$id");
+    $candStat = $_POST['candStat'];
+    $conn->query("UPDATE Candidates SET candFName='$candFName', candMName='$candMName', candLName='$candMName', posID='$posID', candStat='$candStat' WHERE candID=$id");
 }
 
-// Handle Deactivate Candidate
-if (isset($_GET['deactivate'])) {
+$edit_mode = false;
+$edit_candidate = null;
+if(isset($_GET['edit'])){
+    $edit_mode = true;
+    $edit_id = $_GET['edit'];
+    $result = $conn->query("SELECT c.*, p.posName
+                            FROM Candidates c
+                            JOIN Positions p ON c.posID=p.posID
+                            WHERE c.candID=$edit_id");
+    $edit_candidate = $result->fetch_assoc();
+}
+
+if(isset($_GET['deactivate'])){
     $id = $_GET['deactivate'];
     $conn->query("UPDATE Candidates SET candStat='inactive' WHERE candID=$id");
 }
 
-// Fetch all active candidates
-$candidates = $conn->query("SELECT c.*, p.posName FROM Candidates c 
-                          JOIN Positions p ON c.posID = p.posID 
-                          WHERE c.candStat='active'");
+$positions = $conn->query("SELECT * FROM Positions WHERE posStat='open'");
+
+$candidates = $conn->query("SELECT c.*, p.posName
+                            FROM Candidates c
+                            JOIN Positions p ON c.posID=p.posID");
 ?>
 
-<?php if ($edit_mode && $edit_candidate): ?>
-<!-- Edit Candidate Form -->
-<h2>Edit Candidate</h2>
-<form method="post">
-    <input type="hidden" name="id" value="<?= $edit_candidate['candID'] ?>">
-    First Name: <input type="text" name="candFName" value="<?= $edit_candidate['candFName'] ?>" required><br>
-    Middle Name: <input type="text" name="candMName" value="<?= $edit_candidate['candMName'] ?>"><br>
-    Last Name: <input type="text" name="candLName" value="<?= $edit_candidate['candLName'] ?>" required><br> 
-    Position:
-    <select name="posID">
-    <?php
-    $positions = $conn->query("SELECT posID, posName FROM Positions WHERE posStat='open'");
-    while($row = $positions->fetch_assoc()) {
-        $selected = ($row["posID"] == $edit_candidate["posID"]) ? 'selected' : '';
-        echo "<option value='{$row["posID"]}' {$selected}>{$row["posName"]}</option>";
-    }
-    ?>
-</select><br>
-    Status: 
-    <select name="candStat">
-        <option value="active" <?= $edit_candidate['candStat'] == 'active' ? 'selected' : '' ?>>Active</option>
-        <option value="inactive" <?= $edit_candidate['candStat'] == 'inactive' ? 'selected' : '' ?>>Inactive</option>
-    </select><br>
-    <button type="submit" name="edit">Update Candidate</button>
-    <a href="candidates.php">Cancel</a>
-</form>
-<?php else: ?>
-<!-- Add Candidate Form -->
-<h2>Candidates Management</h2>
-<form method="post">
-    <input type="hidden" name="id" value="">
-    First Name: <input type="text" name="candFName" required><br>
-    Middle Name: <input type="text" name="candMName"><br>
-    Last Name: <input type="text" name="candLName" required><br>
-    Position: 
-    <select name="posID">
-        <?php
-        $positions = $conn->query("SELECT posID, posName FROM Positions WHERE posStat='open'");
-        while($row = $positions->fetch_assoc()) {
-            echo "<option value='".$row["posID"]."'>".$row["posName"]."</option>";
-        }
-        ?>
-    </select><br>
-    Status: 
-    <select name="candStat">
-        <option value="active">Active</option>
-        <option value="inactive">Inactive</option>
-    </select><br>
-    <button type="submit" name="add">Add Candidate</button>
-</form>
-<?php endif; ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOTING SYSTEM</title>
+</head>
+<body>
+    <h1>CANDIDATES MANAGEMENT</h1>
+    <!--Edting Candidates Form-->
+    <?php if($edit_mode && $edit_candidate) :?>
+    <form method="post">
+        <input type="hidden" name="id" value="<?=$edit_candidate['candID']?>">
+        FIRST NAME: <input type="text" name="candFName" value="<?=$edit_candidate['candFName']?>" required><br>
+        MIDDLE NAME : <input type="text" name="candMName" value="<?=$edit_candidate['candMName']?>" required><br>
+        LAST NAME : <input type="text" name="candLName" value="<?=$edit_candidate['candLName']?>" required><br>
+        POSITION :
+        <SELECT name="posID">
+            <?php while($p = $positions->fetch_assoc()):?>
+                <option value="<?=$p['posID']?>"><?=$p['posName']?></option>
+            <?php endwhile;?>    
+        </SELECT><br>
+        STATUS :
+        <SELECT name="candStat">
+            <option value="active" <?=$edit_candidate['candStat']=='active' ? 'selected' : ''?>>active</option>
+            <option value="inactive" <?=$edit_candidate['candStat']=='active' ? 'selected' : ''?>>inactive</option>
+        </SELECT><br>
+        <button type="submit" name="edit">Update Candiate</button>
+        <a href="candidates.php">Cancel</a>
+    </form>
+    <?php else:?>
+    <!--Adding Candidates Form-->
+    <h3>ADDING CANDIDATES</h3>
+    <form method="post">
+        <input type="hidden" name="id" value="">
+        FIRST NAME: <input type="text" name="candFName" required><br>
+        MIDDLE NAME : <input type="text" name="candMName" required><br>
+        LAST NAME : <input type="text" name="candLName" required><br>
+        POSITION :
+        <SELECT name="posID">
+            <?php while($p = $positions->fetch_assoc()):?>
+                <option value="<?=$p['posID']?>"><?=$p['posName']?></option>
+            <?php endwhile;?>
+        </SELECT><br>
+        STATUS:
+        <SELECT>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+        </SELECT><br>
+        <button type="submit" name="add">Add Candidate</button>
+    </form>
+    <?php endif;?>
+    <table border=1>
+        <tr>
+            <th>ID</th>
+            <th>NAME</th>
+            <th>POSITION</th>
+            <th>STATUS</th>
+            <th>ACTIONS</th>
+        </tr>
 
-<button><a href="index.php">Back</a></button>
-
-<table border="1">
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Position</th>
-        <th>Status</th>
-        <th>Actions</th>
-    </tr>
-    <?php while($row = $candidates->fetch_assoc()): ?>
-    <tr>
-        <td><?= $row['candID'] ?></td>
-        <td><?= $row['candFName'] ?> <?= $row['candMName'] ?> <?= $row['candLName'] ?></td>
-        <td><?= $row['posName'] ?></td>
-        <td><?= $row['candStat'] ?></td>
-        <td>
-            <a href="?edit=<?= $row['candID'] ?>">Edit</a>
-            <?php if ($row['candStat'] == 'active'): ?>
-                <a href="?deactivate=<?= $row['candID'] ?>">Deactivate</a>
-            <?php endif; ?>
-        </td>
-    </tr>
-    <?php endwhile; ?>
-</table>
+        <?php while($row = $candidates->fetch_assoc()):?>
+            <tr>
+                <td><?=$row['candID']?></td>
+                <td><?=$row['candFName']?> <?=$row['candMName']?> <?=$row['candLName']?></td>
+                <td><?=$row['posName']?></td>
+                <td><?=$row['candStat']?></td>
+                <td>
+                    <a href="?edit=<?=$row['candID']?>">EDIT</a>
+                    <?php if($row['candStat'] == 'active'):?>
+                        <a href="?deactivate=<?=$row['candID']?>">DEACTIVATE</a>
+                    <?php endif;?>
+                </td>
+            </tr>
+        <?php endwhile;?>
+    </table>
+</body>
+</html>
